@@ -46,7 +46,7 @@ def predict_important(text, threshold=0.5, max_length=512):
     return ("important" if p_imp >= threshold else "not_important"), p_imp
 
 
-privacy_notice_email = """Subject: We’re Updating our Consumer Terms and Privacy Policy\n\nHello,
+privacy_notice_email = """Subject: We're Updating our Consumer Terms and Privacy Policy\n\nHello,
 We're writing to inform you about important updates to our Consumer Terms and Privacy Policy. These changes will take effect on September 28, 2025, or you can choose to accept the updated terms before this date when you log in to Claude.ai. 
 These changes only affect Consumer accounts (Claude Free, Pro, and Max plans). If you use Claude for Work, via the API, or other services under our Commercial Terms or other Agreements, then these changes don't apply to you. 
 What's changing?
@@ -75,7 +75,7 @@ important_email = """Subject: Credit Fraud Detected\n\nHello, this is MAX. We ha
 If so, it is imperative that you'll act quickly and cancel this card."""
 
 important_email_2 = """Subject: Important: Unusual Activity Detected on Your Card\n\nHello Ron,
-We detected unusual activity on your [Bank Name] card ending in 1234. For your security, we temporarily placed a hold on certain transactions.
+We detected unusual activity on your MAX card ending in 3482. For your security, we temporarily placed a hold on certain transactions.
 Details of the flagged activity:
 Date: September 2, 2025
 Amount: $245.87
@@ -119,6 +119,7 @@ emails = [
     important_email_3,
     important_email_4,
 ]
+
 for email in emails:
     print(email)
     print()
