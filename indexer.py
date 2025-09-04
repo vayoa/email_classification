@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+from datetime import datetime, timezone
 import json
 import os
 from dataclasses import dataclass
@@ -203,12 +204,25 @@ def fetch_sender_subject_body_batched(
             subject = h.get("subject", "")
 
             body_text = extract_body_from_payload(payload)
+
+            # NEW: capture Gmail's internalDate (ms since epoch, UTC)
+            internal_ms = response.get("internalDate")
+            if internal_ms is not None:
+                internal_ms = int(internal_ms)
+                dt = datetime.fromtimestamp(internal_ms / 1000.0, tz=timezone.utc)
+                iso = dt.isoformat()
+            else:
+                iso = None
+
             results[response["id"]] = {
                 "id": response.get("id", ""),
                 "from": sender or "",
                 "subject": subject or "",
                 "body": body_text or "",
+                "date_epoch_ms": internal_ms or "",
+                "date_iso": iso or "",
             }
+
         except Exception as e:
             errors.append({"id": request_id, "error": f"parse_error: {e}"})
 
@@ -356,6 +370,10 @@ def embed_and_upsert(
             "pred_category_p": float(p.get("pred_category_p") or 0.0),
             "pred_important": p.get("pred_important"),
             "pred_important_p": float(p.get("pred_important_p") or 0.0),
+            "date_iso": r.get("date_iso") or None,
+            "date_epoch_ms": (
+                int(r["date_epoch_ms"]) if r.get("date_epoch_ms") is not None else None
+            ),
         }
 
         ids.append(rid)
@@ -393,7 +411,14 @@ def process_batch(
         body = (r.get("body") or "").strip()
         if sender or subj or body:
             cleaned.append(
-                {"id": r["id"], "from": sender, "subject": subj, "body": body}
+                {
+                    "id": r["id"],
+                    "from": sender,
+                    "subject": subj,
+                    "body": body,
+                    "date_epoch_ms": r["date_epoch_ms"],
+                    "date_iso": r["date_iso"],
+                }
             )
     if not cleaned:
         return 0

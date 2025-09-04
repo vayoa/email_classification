@@ -9,12 +9,14 @@ from enum import Enum
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import hashlib
+from rich import print
 from indexer import (
     init_multitask_model,
     html_to_text_fast,
     classify_rows,
     embed_and_upsert,
 )
+from datetime import datetime
 
 load_dotenv()
 
@@ -30,6 +32,7 @@ class Category(str, Enum):
 
 class Email(BaseModel):
     id: str
+    date: datetime
     sender: str
     text: str | None
     predicted_class: Category
@@ -116,21 +119,33 @@ def retrieve(
     query: str = None,
     pred_category: Category = None,
     pred_important: bool = None,
+    before: str = None,
+    after: str = None,
     k: int = 5,
 ) -> list[Email]:
-    where = {}
-    if pred_category and pred_important is not None:
-        where = {
-            "$and": [
-                {"pred_category": pred_category},
-                {"pred_important": pred_important},
-            ]
-        }
-    else:
-        if pred_category:
-            where["pred_category"] = pred_category
-        if pred_important is not None:
-            where["pred_important"] = pred_important
+
+    where = {"$and": []}
+    if pred_category:
+        where["$and"].append({"pred_category": {"$eq": pred_category}})
+    if pred_important is not None:
+        where["$and"].append(
+            {
+                "pred_important": {
+                    "$eq": "important" if pred_important else "not_important"
+                }
+            }
+        )
+    if before:
+        before = datetime.strptime(before, "%Y-%m-%d")
+        where["$and"].append(
+            {"date_epoch_ms": {"$lte": int(before.timestamp() * 1000)}}
+        )
+    if after:
+        after = datetime.strptime(after, "%Y-%m-%d")
+        where["$and"].append({"date_epoch_ms": {"$gte": int(after.timestamp() * 1000)}})
+
+    if len(where["$and"]) == 1:
+        where = where["$and"][0]
 
     collection = get_chrome_collection()
 
@@ -167,6 +182,7 @@ def retrieve(
         emails.append(
             Email(
                 id=id,
+                date=meta["date_iso"],
                 sender=meta["from"],
                 text=text,
                 predicted_class=meta["pred_category"],
@@ -180,7 +196,9 @@ def search_by_text(
     query: str,
     category_filter: str | None = None,
     important_filter: bool | None = None,
-    limit: int = 5,
+    sent_before: str | None = None,
+    sent_after: str | None = None,
+    limit: int | None = 5,
 ) -> list[Email]:
     """Semantic email search with optional category/importance filters.
 
@@ -188,6 +206,8 @@ def search_by_text(
         query: User's natural-language query, e.g., 'invoices from ACME last quarter'.
         category_filter: Optional predicted category to restrict the candidate set.
         important_filter: Optional predicted flag to restrict the candidate set to only important to read emails.
+        sent_before: Optional date filter, "%Y-%m-%d" formatted.
+        sent_after: Optional date filter, "%Y-%m-%d" formatted.
         limit: Number of results to return. Default is 5, max are 20.
 
     Returns:
@@ -197,7 +217,9 @@ def search_by_text(
         query=query,
         pred_category=category_filter,
         pred_important=important_filter,
-        k=min(limit, 20),
+        before=sent_before,
+        after=sent_after,
+        k=min(limit or 5, 20),
     )
 
 
@@ -205,7 +227,9 @@ def search_by_category(
     category_filter: str,
     important_filter: bool = None,
     query: str = None,
-    limit: int = 5,
+    sent_before: str | None = None,
+    sent_after: str | None = None,
+    limit: int | None = 5,
 ) -> list[Email]:
     """Category-first retrieval with optional importance filter or semantic refinement.
 
@@ -213,6 +237,8 @@ def search_by_category(
         category_filter: Predicted category to filter on.
         important_filter: Optional predicted flag to restrict the candidate set to only important to read emails.
         query: Optional natural-language query to refine within the class bucket, e.g., 'from ACME in Q2'. If omitted, results are ranked by recency.
+        sent_before: Optional date filter, "%Y-%m-%d" formatted.
+        sent_after: Optional date filter, "%Y-%m-%d" formatted.
         limit: Number of results to return. Default is 5, max are 20.
 
     Returns:
@@ -222,17 +248,19 @@ def search_by_category(
         query=query,
         pred_category=category_filter,
         pred_important=important_filter,
-        k=min(limit, 20),
+        before=sent_before,
+        after=sent_after,
+        k=min(limit or 5, 20),
     )
 
 
 MODEL = "gemini-2.5-flash"
 CONFIG = types.GenerateContentConfig(
-    system_instruction=f"""You are an ai assistant that has access to the user's personal gmail emails in a vectorized db.
+    system_instruction=f"""You are an ai assistant that has access to the user's personal gmail emails in a vectorized db. Today is {datetime.now().strftime('%Y-%m-%d')}.
 The emails in that db have also been classified by a custom model that predicts email categories (out of {Category._member_names_}) and whether that email is a priority email (important). This was done to help you with retrieval.
 Try to be as useful as you can to the user. Answering it's questions while making sure to attribute your findings.
-When you're asked a question, you'll first try to retrieve the relevant emails, read through them and then answer carefully.""",
-    thinking_config=types.ThinkingConfig(thinking_budget=0),
+When you're asked a question, you'll first try to retrieve the relevant emails, read through them and then answer carefully. Make sure to quote yourself to your sources and try to always mention the email category + importance if you're listing them. Do not give answers that are too short.""",
+    thinking_config=types.ThinkingConfig(thinking_budget=-1),
     tools=[
         search_by_text,
         search_by_category,
@@ -302,7 +330,7 @@ if prompt := st.chat_input("What is up?"):
 
 
 with st.sidebar:
-    classify_tab, auth_tab = st.tabs(["Classify", "Authenticate"])
+    classify_tab, auth_tab = st.tabs(["Classify", "Fetch"])
 
     with classify_tab:
         st.title("Classify")
