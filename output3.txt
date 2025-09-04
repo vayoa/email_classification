@@ -1,0 +1,44 @@
+❯ uv run train_email_multitask.py  --csv ./email_dataset.csv  --text-col text  --max-length 512  --batch-size 16  --epochs 3
+The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': None, 'bos_token_id': None}.
+{'loss': 2.5678, 'grad_norm': 19.44745635986328, 'learning_rate': 1.8260869565217393e-05, 'epoch': 0.17}
+{'loss': 1.1327, 'grad_norm': 13.687152862548828, 'learning_rate': 1.8907363420427555e-05, 'epoch': 0.34}
+{'loss': 0.4353, 'grad_norm': 6.3025336265563965, 'learning_rate': 1.7719714964370545e-05, 'epoch': 0.51}
+{'loss': 0.3109, 'grad_norm': 8.157584190368652, 'learning_rate': 1.653206650831354e-05, 'epoch': 0.68}
+{'loss': 0.1846, 'grad_norm': 4.141303539276123, 'learning_rate': 1.5344418052256533e-05, 'epoch': 0.85}
+{'eval_loss': 0.11633610725402832, 'eval_overall_score': 0.9579972237885939, 'eval_cat_accuracy': 0.990108803165183, 'eval_cat_macro_f1': 0.990110753164417, 'eval_cat_weighted_f1': 0.990113014130802, 'eval_cat_macro_precision': 0.9901580517709222, 'eval_cat_macro_recall': 0.9901043700333245, 'eval_imp_accuracy': 0.9678536102868447, 'eval_imp_precision': 0.8787878787878788, 'eval_imp_recall': 0.9783132530120482, 'eval_imp_f1': 0.9258836944127709, 'eval_imp_roc_auc': 0.9973991797932239, 'eval_runtime': 18.6093, 'eval_samples_per_second': 108.656, 'eval_steps_per_second': 13.595, 'epoch': 1.0}
+{'loss': 0.1544, 'grad_norm': 10.889383316040039, 'learning_rate': 1.4156769596199527e-05, 'epoch': 1.01}
+{'loss': 0.0556, 'grad_norm': 8.103240013122559, 'learning_rate': 1.296912114014252e-05, 'epoch': 1.18}
+{'loss': 0.0573, 'grad_norm': 6.277998447418213, 'learning_rate': 1.1781472684085512e-05, 'epoch': 1.35}
+{'loss': 0.051, 'grad_norm': 0.4849356710910797, 'learning_rate': 1.0593824228028504e-05, 'epoch': 1.52}
+{'loss': 0.0636, 'grad_norm': 7.279757022857666, 'learning_rate': 9.406175771971498e-06, 'epoch': 1.69}
+{'loss': 0.0383, 'grad_norm': 0.6995746493339539, 'learning_rate': 8.21852731591449e-06, 'epoch': 1.86}                                                                                                                                                                                                                                                    
+{'eval_loss': 0.0532318614423275, 'eval_overall_score': 0.9902256964114682, 'eval_cat_accuracy': 0.9925816023738873, 'eval_cat_macro_f1': 0.9925873151530334, 'eval_cat_weighted_f1': 0.9925866323108367, 'eval_cat_macro_precision': 0.9926163922277681, 'eval_cat_macro_recall': 0.9925801130506106, 'eval_imp_accuracy': 0.9950544015825915, 'eval_imp_precision': 0.9951100244498777, 'eval_imp_recall': 0.980722891566265, 'eval_imp_f1': 0.9878640776699029, 'eval_imp_roc_auc': 0.9997166013150299, 'eval_runtime': 18.9313, 'eval_samples_per_second': 106.807, 'eval_steps_per_second': 13.364, 'epoch': 2.0}                                                                                                
+{'loss': 0.057, 'grad_norm': 16.202281951904297, 'learning_rate': 7.030878859857483e-06, 'epoch': 2.03}                                                                                                                                                                                                                                                    
+{'loss': 0.018, 'grad_norm': 2.320342779159546, 'learning_rate': 5.843230403800475e-06, 'epoch': 2.2}
+{'loss': 0.0064, 'grad_norm': 0.3233538269996643, 'learning_rate': 4.6555819477434686e-06, 'epoch': 2.37}                                                                                                                                                                                                                                                  
+{'loss': 0.0095, 'grad_norm': 7.193244457244873, 'learning_rate': 3.467933491686461e-06, 'epoch': 2.54}                                                                                                                                                                                                                                                    
+{'loss': 0.0053, 'grad_norm': 0.5256692171096802, 'learning_rate': 2.280285035629454e-06, 'epoch': 2.71}                                                                                                                                                                                                                                                   
+{'loss': 0.0128, 'grad_norm': 0.08121078461408615, 'learning_rate': 1.0926365795724466e-06, 'epoch': 2.87}                                                                                                                                                                                                                                                 
+{'eval_loss': 0.04059402272105217, 'eval_overall_score': 0.9908519069594639, 'eval_cat_accuracy': 0.9925816023738873, 'eval_cat_macro_f1': 0.9925865225041758, 'eval_cat_weighted_f1': 0.9925916145944671, 'eval_cat_macro_precision': 0.992650724034855, 'eval_cat_macro_recall': 0.9925815936643944, 'eval_imp_accuracy': 0.9955489614243324, 'eval_imp_precision': 0.9927184466019418, 'eval_imp_recall': 0.9855421686746988, 'eval_imp_f1': 0.9891172914147521, 'eval_imp_roc_auc': 0.9998485541418943, 'eval_runtime': 19.2839, 'eval_samples_per_second': 104.854, 'eval_steps_per_second': 13.12, 'epoch': 3.0}                                                                                                
+{'train_runtime': 1078.1249, 'train_samples_per_second': 26.248, 'train_steps_per_second': 0.412, 'train_loss': 0.2910979445520285, 'epoch': 3.0}                                                                                                                                                                                                          
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 444/444 [17:58<00:00,  2.43s/it]
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 253/253 [00:19<00:00, 13.26it/s]
+{
+  "output_dir": "outputs/modernbert_multitask",
+  "eval_loss": 0.04059402272105217,
+  "eval_overall_score": 0.9908519069594639,
+  "eval_cat_accuracy": 0.9925816023738873,
+  "eval_cat_macro_f1": 0.9925865225041758,
+  "eval_cat_weighted_f1": 0.9925916145944671,
+  "eval_cat_macro_precision": 0.992650724034855,
+  "eval_cat_macro_recall": 0.9925815936643944,
+  "eval_imp_accuracy": 0.9955489614243324,
+  "eval_imp_precision": 0.9927184466019418,
+  "eval_imp_recall": 0.9855421686746988,
+  "eval_imp_f1": 0.9891172914147521,
+  "eval_imp_roc_auc": 0.9998485541418943,
+  "eval_runtime": 19.1967,
+  "eval_samples_per_second": 105.331,
+  "eval_steps_per_second": 13.179,
+  "epoch": 3.0
+}

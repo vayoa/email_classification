@@ -190,6 +190,78 @@ def binary_metrics(y_true, y_pred, p1=None):
     return {"accuracy": acc, "precision": p, "recall": r, "f1": f1, "roc_auc": auc}
 
 
+def make_splits_and_save(
+    df,
+    texts,  # pd.Series or list (the text column already prepared)
+    y_cat,  # list/np.ndarray of category ids
+    y_imp,  # list/np.ndarray of important (0/1)
+    val_size: float,
+    test_size: float,
+    seed: int,
+    output_dir: str,
+):
+    """
+    3-way split (train/val/test) stratified by category only.
+    Saves CSVs + index arrays under {output_dir}/splits and returns train/val arrays for training.
+    Test split is not returned (left untouched for later evaluation).
+    """
+    import numpy as np, os
+    from sklearn.model_selection import train_test_split
+
+    assert (
+        0 < val_size < 1 and 0 < test_size < 1 and (val_size + test_size) < 1
+    ), "val_size + test_size must be < 1"
+
+    n = len(df)
+    idx_all = np.arange(n)
+    strat = np.array(y_cat)
+
+    # 1) train vs holdout (val+test)
+    holdout_size = val_size + test_size
+    train_idx, hold_idx = train_test_split(
+        idx_all,
+        test_size=holdout_size,
+        random_state=seed,
+        stratify=strat,
+    )
+
+    # 2) holdout -> val vs test
+    val_prop_within_hold = val_size / holdout_size
+    val_idx, test_idx = train_test_split(
+        hold_idx,
+        test_size=(1.0 - val_prop_within_hold),
+        random_state=seed,
+        stratify=strat[hold_idx],
+    )
+
+    # Save splits
+    split_dir = os.path.join(output_dir, "splits")
+    os.makedirs(split_dir, exist_ok=True)
+    df.iloc[train_idx].to_csv(os.path.join(split_dir, "train.csv"), index=False)
+    df.iloc[val_idx].to_csv(os.path.join(split_dir, "val.csv"), index=False)
+    df.iloc[test_idx].to_csv(os.path.join(split_dir, "test.csv"), index=False)
+
+    np.save(os.path.join(split_dir, "train_indices.npy"), train_idx)
+    np.save(os.path.join(split_dir, "val_indices.npy"), val_idx)
+    np.save(os.path.join(split_dir, "test_indices.npy"), test_idx)
+
+    # Materialize arrays for training (test is kept aside)
+    def take(seq, idxs):
+        if hasattr(seq, "iloc"):  # pandas Series
+            return seq.iloc[idxs].tolist()
+        seq_list = seq.tolist() if hasattr(seq, "tolist") else list(seq)
+        return [seq_list[i] for i in idxs]
+
+    X_train = take(texts, train_idx)
+    X_val = take(texts, val_idx)
+    ycat_tr = take(y_cat, train_idx)
+    ycat_va = take(y_cat, val_idx)
+    yimp_tr = take(y_imp, train_idx)
+    yimp_va = take(y_imp, val_idx)
+
+    return X_train, X_val, ycat_tr, ycat_va, yimp_tr, yimp_va
+
+
 # -----------------------------
 # Train
 # -----------------------------
@@ -207,7 +279,19 @@ def main():
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--output-dir", default="outputs/modernbert_multitask")
     ap.add_argument("--no-weighted-loss", action="store_true")
+    ap.add_argument("--val-size", type=float, default=0.15, help="validation fraction")
+    ap.add_argument(
+        "--test-size",
+        type=float,
+        default=0.15,
+        help="test fraction (held out, never used in training)",
+    )
     args = ap.parse_args()
+    assert (
+        0 < args.val_size < 1
+        and 0 < args.test_size < 1
+        and args.val_size + args.test_size < 1
+    ), "val_size + test_size must be < 1"
 
     MODEL_NAME = "answerdotai/ModernBERT-base"
 
@@ -232,13 +316,17 @@ def main():
     y_cat = df["category"].map(label2id_cat).tolist()
     y_imp = df["important"].astype(int).tolist()
 
-    X_train, X_val, ycat_tr, ycat_va, yimp_tr, yimp_va = train_test_split(
-        texts.tolist(),
-        y_cat,
-        y_imp,
-        test_size=0.15,
-        random_state=args.seed,
-        stratify=y_cat,
+    # Split our dataset to train/validation and test (saved to disk) for hyperparameter tuning.
+    # Notice we stratify on category. Our dataset is big enough to support important without stratifying on it + each category will have different importance freq (e.g. spam has 0 important emails).
+    X_train, X_val, ycat_tr, ycat_va, yimp_tr, yimp_va = make_splits_and_save(
+        df=df,
+        texts=texts,
+        y_cat=y_cat,
+        y_imp=y_imp,
+        val_size=args.val_size,
+        test_size=args.test_size,
+        seed=args.seed,
+        output_dir=args.output_dir,
     )
 
     # Tokenize

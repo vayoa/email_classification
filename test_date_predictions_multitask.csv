@@ -23,11 +23,11 @@ For detailed information about these changes:
     Next time you log into Claude, review the terms and confirm your settings
 
 If you have questions about these updates, please visit our Help Center.
-–The Anthropic Team",update,False,updates,"[0.3382021188735962, 0.020519951358437538, 0.20694081485271454, 0.010212819091975689, 0.4233728051185608, 0.0007514645694755018]",not_important,0.0858241394162178
+–The Anthropic Team",update,False,forum,"[0.627345860004425, 0.046341098845005035, 0.08415909111499786, 0.013961761258542538, 0.22632382810115814, 0.0018684174865484238]",not_important,0.14685027301311493
 "Subject: Credit Fraud Detected
 
 Hello, this is MAX. We have detected an irregular amount of suspicious activity coming from your credit card, after careful analysis, we have determined your card has possibly been stolen.
-If so, it is imperative that you'll act quickly and cancel this card.",update,True,spam,"[4.1722814785316586e-05, 0.00011885724234161898, 8.919399988371879e-05, 0.9995220899581909, 0.00013298385601956397, 9.513214172329754e-05]",not_important,0.00047285447362810373
+If so, it is imperative that you'll act quickly and cancel this card.",update,True,spam,"[0.0002865452552214265, 0.0005009419401176274, 0.004345476161688566, 0.9928025603294373, 0.0018359518144279718, 0.00022845380590297282]",not_important,0.0026782178319990635
 "Subject: Important: Unusual Activity Detected on Your Card
 
 Hello Ron,
@@ -40,7 +40,7 @@ If you recognize this transaction, no further action is required. If you do not 
 We will never ask you to click on links in an email to verify account details. For your safety, please always navigate to our website by typing the address directly into your browser or using our official mobile app.
 Thank you for helping us keep your account secure.
 Sincerely,
-MAX Fraud Protection Team",update,True,spam,"[0.02362607792019844, 0.01032146904617548, 0.02539663575589657, 0.612307071685791, 0.06844782829284668, 0.25990086793899536]",important,0.538861870765686
+MAX Fraud Protection Team",update,True,spam,"[0.0590052530169487, 0.027824515476822853, 0.009059801697731018, 0.673468291759491, 0.17321451008319855, 0.057427700608968735]",not_important,0.21754522621631622
 "Subject: Action Required: Security Update on Your Work Account
 
 Hello Ron,
@@ -52,7 +52,7 @@ Restart your device to complete the process.
 Failure to update by the deadline will result in automatic suspension of VPN access until the patch is applied.
 If you need assistance, please contact the IT Help Desk at 05529349.
 Thank you for acting promptly to maintain the security of our systems.
-— IT Security Team",update,True,updates,"[0.018136780709028244, 0.000537221203558147, 0.003100565169006586, 0.004071637988090515, 0.9675320386886597, 0.006621841806918383]",important,0.9925393462181091
+— IT Security Team",update,True,updates,"[0.005566147621721029, 0.0005260781035758555, 0.0020847471896559, 0.004592582583427429, 0.9852059483528137, 0.0020245565101504326]",important,0.9787736535072327
 "Subject: Action Required: Safety Update on Your Work Account
 
 Hello Ron,
@@ -64,4 +64,4 @@ Restart your device to complete the process.
 Failure to update by the deadline will result in automatic suspension of VPN access until the patch is applied.
 If you need assistance, please contact the IT Help Desk at 05529349.
 Thank you for acting promptly to maintain the safety of our systems.
-— IT Security Team",update,True,updates,"[0.044611889868974686, 0.0009487731731496751, 0.005015100818127394, 0.007572800386697054, 0.932658851146698, 0.00919270794838667]",important,0.8972909450531006
+— IT Security Team",update,True,updates,"[0.12726972997188568, 0.0013127051061019301, 0.00404341658577323, 0.009318958967924118, 0.8562468886375427, 0.0018083276227116585]",important,0.8783664107322693
