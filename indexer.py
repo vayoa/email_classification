@@ -317,15 +317,7 @@ def classify_rows(rows: List[Dict[str, Any]], mb: ModelBundle) -> List[Dict[str,
 
 def init_vector_store(persist_dir: str, collection_name: str):
     # Persistent client (non-ephemeral)
-    try:
-        client = chromadb.PersistentClient(path=persist_dir)
-    except Exception:
-        # Back-compat for older chromadb versions
-        from chromadb.config import Settings  # type: ignore
-
-        client = chromadb.Client(
-            Settings(chroma_db_impl="duckdb+parquet", persist_directory=persist_dir)
-        )
+    client = chromadb.PersistentClient(path=persist_dir)
     # Create/get collection; we will pass precomputed embeddings
     collection = client.get_or_create_collection(name=collection_name)
     return client, collection
