@@ -4,3 +4,5 @@
 /venv/
 /UseCase-GenAI.docx
 /outputs/
+/credentials.json
+/token.json
