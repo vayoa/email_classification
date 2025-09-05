@@ -8,17 +8,21 @@ This project is manged with the `uv` package manager. To get started, run the fo
 uv sync
 ```
 
-### NOTICE
+## NOTICE
 
 This project was tested only on my local machine, where I trained the model using my rtx 3070 mobile. RAG Inference in realtime is also done locally.
 
 The uv project is configured to match my setup, so some configuration could be needed on your part.
 
-### Timings
+## Timings
 
 - Training (3 epocs): ~20m.
 - Indexing (2000 emails): ~45s.
 - Realtime RAG: ~<1s.
+
+## Dataset
+
+I used [this public dataset](https://huggingface.co/datasets/jason23322/high-accuracy-email-classifier).
 
 ## Running This Project
 
@@ -57,8 +61,11 @@ The streamlit app uses a couple of scripts:
    uv run .\indexer.py # this creates our vector store + metadata under ./db.
    ```
 
-2. [The streamlit script](app.py) is what you need to run for the whole package. It connects to the vector store under `./db` and utilizes it in query tools we give to gemini for chatting.
-   You can also pase emails here directly to get added to the db or re-index.
+   > **Notice:** indexing requires a `credentials.json` file (comes from the google cloud api section) to read gmail emails.
+
+2. [The streamlit script](app.py) is what you need to run for the whole package. It connects to the vector store under `./db` and utilizes it in query tools we give to gemini for chatting. You can also pase emails here directly to get added to the db or re-index.
+
+   Before you can run this script, you need to make sure you have a .env in the same format as [the example .env](.env.example). You can get your gemini api key from [google ai studio](https://aistudio.google.com/apikey).
 
    To execute the streamlit app through `uv`, run:
 
