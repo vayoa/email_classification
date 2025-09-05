@@ -105,6 +105,8 @@ def index_pasted_email(
             body = rest.strip()
     body = html_to_text_fast(body)
 
+    date = datetime.now()
+
     rid = _make_id(sender.strip(), subject.strip(), body.strip())
     rows = [
         {
@@ -112,6 +114,8 @@ def index_pasted_email(
             "from": sender.strip(),
             "subject": subject.strip(),
             "body": body.strip(),
+            "date_epoch_ms": int(date.timestamp() * 1000),
+            "date_iso": date.isoformat(),
         }
     ]
 
@@ -276,14 +280,18 @@ def _as_email(obj) -> Email | None:
             return None
         data = {
             "id": data.get("id") or "",
-            "date": data.get("date") or data.get("date_iso") or data.get("date_epoch_ms"),
+            "date": data.get("date")
+            or data.get("date_iso")
+            or data.get("date_epoch_ms"),
             "sender": data.get("sender") or data.get("from") or "",
             "subject": data.get("subject"),
             "text": data.get("text") or data.get("body"),
             "predicted_class": data.get("predicted_class") or data.get("pred_category"),
-            "predicted_important": data.get("predicted_important")
-            if data.get("predicted_important") is not None
-            else data.get("pred_important"),
+            "predicted_important": (
+                data.get("predicted_important")
+                if data.get("predicted_important") is not None
+                else data.get("pred_important")
+            ),
         }
         # derive subject from first line of text if missing
         if not data.get("subject") and isinstance(data.get("text"), str):
@@ -295,9 +303,6 @@ def _as_email(obj) -> Email | None:
         return Email(**data)
     except Exception:
         return None
-
-
- 
 
 
 _HAS_DIALOG = hasattr(st, "dialog")
@@ -315,7 +320,14 @@ if _HAS_DIALOG:
             if isinstance(item.predicted_class, Category)
             else str(item.predicted_class)
         )
-        meta_bits = [b for b in [cat.replace("_", " ").title(), ("Important" if item.predicted_important else "Not important")] if b]
+        meta_bits = [
+            b
+            for b in [
+                cat.replace("_", " ").title(),
+                ("Important" if item.predicted_important else "Not important"),
+            ]
+            if b
+        ]
         if meta_bits:
             st.caption(" • ".join(meta_bits))
         if item.subject:
@@ -335,7 +347,14 @@ def _render_inline_source_detail(item: Email):
             if isinstance(item.predicted_class, Category)
             else str(item.predicted_class)
         )
-        meta_bits = [b for b in [cat.replace("_", " ").title(), ("Important" if item.predicted_important else "Not important")] if b]
+        meta_bits = [
+            b
+            for b in [
+                cat.replace("_", " ").title(),
+                ("Important" if item.predicted_important else "Not important"),
+            ]
+            if b
+        ]
         if meta_bits:
             st.caption(" • ".join(meta_bits))
         if item.subject:
@@ -389,7 +408,11 @@ def _render_sources_panel_v2(items: list[Email]):
                 row = st.columns(cols_per_row, gap="small")
             col = row[i % cols_per_row]
             with col:
-                date_str = it.date.strftime("%Y-%m-%d") if isinstance(it.date, datetime) else str(it.date)
+                date_str = (
+                    it.date.strftime("%Y-%m-%d")
+                    if isinstance(it.date, datetime)
+                    else str(it.date)
+                )
                 label = f"{_cat_icon(it.predicted_class)} {_imp_icon(it.predicted_important)}  {date_str} · {_trunc(it.subject or '')}"
                 key = f"srcpill_{hash((id(items), it.id, it.sender, date_str, it.subject))}_{i}"
                 if st.button(label, key=key, use_container_width=True):
@@ -526,6 +549,8 @@ def _gather_existing_tool_fps(messages) -> set[str]:
     return fps
 
 
+st.set_page_config(layout="wide")
+
 with st.sidebar:
 
     model = st.selectbox(
@@ -569,7 +594,6 @@ with st.sidebar:
                 pred["pred_important_p"],
                 border=True,
             )
-
 
     def _read_token_status(path: str = "token.json") -> tuple[str, str] | None:
         try:
@@ -620,7 +644,9 @@ with st.sidebar:
                 if status == "valid":
                     st.success(f"Gmail token valid. Expires at {detail} UTC.")
                 elif status == "expired":
-                    st.warning(f"Token expired or near expiry (at {detail} UTC). Will refresh.")
+                    st.warning(
+                        f"Token expired or near expiry (at {detail} UTC). Will refresh."
+                    )
                 else:
                     st.info(f"Token status unknown: {detail}")
 
@@ -705,7 +731,10 @@ def response_generator(messages=None):
                             fp = _fingerprint_function_call(part.function_call)
                             if fp and (fp not in baseline_fps) and (fp not in seen_fps):
                                 seen_fps.add(fp)
-                                results = _call_tool_from_function_call(part.function_call) or []
+                                results = (
+                                    _call_tool_from_function_call(part.function_call)
+                                    or []
+                                )
                                 for r in results:
                                     em = _as_email(r)
                                     if em is not None:
@@ -792,7 +821,9 @@ if prompt := st.chat_input("What is up?"):
                 # As soon as sources are collected during streaming, render them once
                 if (not rendered) and st.session_state.get("_last_sources"):
                     with sources_ph.container():
-                        _render_sources_panel_v2(st.session_state.get("_last_sources", []))
+                        _render_sources_panel_v2(
+                            st.session_state.get("_last_sources", [])
+                        )
                     rendered = True
                 yield chunk
 

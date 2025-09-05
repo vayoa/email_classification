@@ -1,24 +1,3 @@
-# fetch_gmail_emails.py
-"""
-Indexer script: fetch Gmail messages in batches of 100, drop empty rows, run
-ModernBERT multitask inference per batch, and build a persistent ChromaDB
-(./db) with MiniLM embeddings and classification metadata.
-
-Requirements (install as needed):
-  pip install -U google-api-python-client google-auth-httplib2 google-auth-oauthlib \
-                html2text pandas torch transformers sentence-transformers chromadb
-
-OAuth setup:
-  1) Enable Gmail API in Google Cloud; create OAuth Client ID (Desktop App).
-  2) Put credentials.json next to this script. token.json will be created on first run.
-
-Example:
-  python fetch_gmail_emails.py --limit 2000 \
-      --model-dir outputs/modernbert_multitask \
-      --collection-name emails \
-      --persist-dir ./db
-"""
-
 from __future__ import annotations
 
 import argparse
