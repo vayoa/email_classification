@@ -24,6 +24,10 @@ The uv project is configured to match my setup, so some configuration could be n
 
 I used [this public dataset](https://huggingface.co/datasets/jason23322/high-accuracy-email-classifier).
 
+## Model
+
+The checkpoint can be installed from the [huggingface repo of the project](https://huggingface.co/vayoas/modernbert-email-multitask).
+
 ## Running This Project
 
 ### Training
