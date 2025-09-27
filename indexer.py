@@ -31,6 +31,9 @@ from infer_email_multitask import (  # noqa: E402
 from sentence_transformers import SentenceTransformer
 import chromadb
 
+import threading
+
+GPU_DB_LOCK = threading.Lock()
 
 # ---------------- Config defaults ---------------- #
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
@@ -383,6 +386,8 @@ def process_batch(
     Returns number of indexed rows.
     """
     # 1) Clear rows with no sender, subject, and body (all empty) — ~30% historically.
+    print(f"[process_batch] start on {len(rows)} rows", flush=True)
+
     cleaned = []
     for r in rows:
         sender = (r.get("from") or "").strip()
@@ -402,11 +407,12 @@ def process_batch(
     if not cleaned:
         return 0
 
-    # 2) Multitask inference on this batch with the live model
-    preds = classify_rows(cleaned, mb)
+    with GPU_DB_LOCK:
+        # 2) Multitask inference on this batch with the live model
+        preds = classify_rows(cleaned, mb)
 
-    # 3) MiniLM embeddings + Chroma upsert (store classifications in metadata)
-    embed_and_upsert(cleaned, preds, collection, sbert)
+        # 3) MiniLM embeddings + Chroma upsert (store classifications in metadata)
+        embed_and_upsert(cleaned, preds, collection, sbert)
 
     return len(cleaned)
 
@@ -440,18 +446,20 @@ def run_indexer(
     futures = []
     with ThreadPoolExecutor(max_workers=2) as ex:
         for chunk_ids in chunked(ids, FETCH_BATCH_SIZE):
+            print(f"Fetching {len(chunk_ids)} messages…")
             # Fetch this chunk's rows (network)
             rows, errs = fetch_sender_subject_body_batched(
                 service, chunk_ids, batch_size=FETCH_BATCH_SIZE
             )
             total_errors += len(errs)
-
+            print(f"Fetched {len(rows)} (errs={len(errs)}). Queuing for GPU/DB…")
             # Submit CPU/GPU work (classification + embedding + upsert) to worker
             futures.append(ex.submit(process_batch, rows, mb, collection, sbert))
 
         # Drain
-        for fut in as_completed(futures):
+        for i, fut in enumerate(as_completed(futures)):
             total_indexed += fut.result() or 0
+            print(f"[{i}/{len(futures)}] indexed {total_indexed} rows so far…")
 
     # Persist (older Chroma versions)
     try:
