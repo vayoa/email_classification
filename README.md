@@ -1,4 +1,7 @@
-# MTRX ML Engineer
+# Emailer Assignment - RAG & ModernBERT Classifier enabled Gmail LLM ChatBot
+This repo contains the full code to run the Emailer Assignment - from finetuning modernbert as an email classifier (category + importance) to running it for inference locally in a RAG chatbot that automatically pulls your gmail email data.
+
+The project uses a customlly finetuned ModernBERT email classifier trained to predict email importance & category. This all gets combined with a sentence embedder for rag inference on an llm chatbot.
 
 ## Quick Start
 
